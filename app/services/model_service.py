@@ -21,6 +21,7 @@ class ModelService:
         self.model.eval()
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = 'left'
         self.is_loaded = True
         logger.info("Model loaded successfully")
 

@@ -16,10 +16,15 @@ class QueueService:
         cached_result = cache_service.get(prompt)
         if cached_result:
             import time
+            from app.services.metrics_service import metrics_service
             start = time.perf_counter()
             logger.info("Returning cached result")
             cached_result["cached"] = True
             cached_result["latency_ms"] = round((time.perf_counter() - start) * 1000, 2)
+            metrics_service.record_request(
+                latency_ms=cached_result["latency_ms"],
+                cached=True
+            )
             return cached_result
         
         future = asyncio.get_event_loop().create_future()
@@ -31,6 +36,12 @@ class QueueService:
         logger.info(f"Request queued — queue size: {self.queue.qsize()}")
         result = await future
         cache_service.set(prompt, result)
+        from app.services.metrics_service import metrics_service
+        metrics_service.record_request(
+        latency_ms=result["latency_ms"],
+        cached=False,
+        batch_size=1
+        )
         return result
 
     async def collect_batch(self) -> list:

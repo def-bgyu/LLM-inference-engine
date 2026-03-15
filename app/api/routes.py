@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from app.models.schemas import GenerateRequest, GenerateResponse
 from app.services.queue_service import queue_service
 from app.core.config import settings
+from app.services.metrics_service import metrics_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -27,3 +28,7 @@ async def generate(request: GenerateRequest):
     except Exception as e:
         logger.error(f"Generation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/metrics")
+async def metrics():
+    return metrics_service.get_summary()
