@@ -1,0 +1,29 @@
+import logging
+from fastapi import APIRouter, HTTPException
+from app.models.schemas import GenerateRequest, GenerateResponse
+from app.services.queue_service import queue_service
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+router = APIRouter()
+
+@router.get("/health")
+async def health():
+    return {
+        "status": "ok",
+        "model_loaded": True,
+        "model_name": settings.model_name,
+        "queue_size": queue_service.queue.qsize(),
+    }
+
+@router.post("/generate", response_model=GenerateResponse)
+async def generate(request: GenerateRequest):
+    try:
+        result = await queue_service.enqueue(
+            prompt=request.prompt,
+            max_new_tokens=request.max_new_tokens,
+        )
+        return GenerateResponse(**result)
+    except Exception as e:
+        logger.error(f"Generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
