@@ -17,7 +17,9 @@ class ModelService:
     def load(self):
         logger.info(f"Loading model: {settings.model_name}")
         self.tokenizer = AutoTokenizer.from_pretrained(settings.model_name)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model = AutoModelForCausalLM.from_pretrained(settings.model_name)
+        self.model = self.model.to(self.device)
         self.model.eval()
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -30,6 +32,7 @@ class ModelService:
         start = time.perf_counter()
         request_id = str(uuid.uuid4())[:8]
         inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -58,6 +61,7 @@ class ModelService:
             truncation=True,
             max_length=512
         )
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
         start = time.perf_counter()
         with torch.no_grad():
             outputs = self.model.generate(

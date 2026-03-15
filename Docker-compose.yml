@@ -15,7 +15,7 @@ services:
     depends_on:
       - redis
     environment:
-      - MODEL_NAME=gpt2
+      - MODEL_NAME=EleutherAI/gpt-neo-1.3B
       - MAX_BATCH_SIZE=8
       - BATCH_WAIT_MS=50
       - MAX_NEW_TOKENS=100
