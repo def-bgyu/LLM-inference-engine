@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import numpy as np
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 class CacheService:
 
     def __init__(self):
-        self.redis = redis.Redis(host="localhost", port=6379, db=0)
+        self.redis = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, db=0)
         self.encoder = SentenceTransformer("all-MiniLM-L6-v2")
         self.threshold = 0.92
 

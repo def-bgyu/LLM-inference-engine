@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: vllm-mini-redis-image
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    container_name: vllm-mini-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - MODEL_NAME=gpt2
+      - MAX_BATCH_SIZE=8
+      - BATCH_WAIT_MS=50
+      - MAX_NEW_TOKENS=100
+      - REDIS_HOST=redis
