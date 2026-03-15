@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 
-const METRICS_URL = "http://127.0.0.1:8000/metrics";
+const METRICS_URL = import.meta.env.VITE_METRICS_URL || "http://127.0.0.1:8000/metrics";
 
 function MetricCard({ label, value, sub, color }) {
   return (
