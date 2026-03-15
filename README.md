@@ -139,7 +139,7 @@ llm-inference-engine/
 
 ---
 
-## Configuration
+<!-- ## Configuration
 
 ```env
 MODEL_NAME=gpt2
@@ -148,9 +148,9 @@ BATCH_WAIT_MS=50
 MAX_NEW_TOKENS=100
 ```
 
----
+--- -->
 
-## Benchmarks
+<!-- ## Benchmarks
 
 *GPU benchmarks coming in Week 7 via Google Colab T4.*
 
@@ -175,7 +175,7 @@ MAX_NEW_TOKENS=100
 - [ ] Docker + Kubernetes deployment
 - [ ] GPU benchmarks on Google Colab
 
----
+--- -->
 
 ## License
 
