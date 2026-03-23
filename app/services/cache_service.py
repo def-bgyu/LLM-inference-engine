@@ -10,7 +10,11 @@ logger = logging.getLogger(__name__)
 class CacheService:
 
     def __init__(self):
-        self.redis = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, db=0)
+        redis_url = os.getenv("REDIS_URL", None)
+        if redis_url:
+            self.redis = redis.Redis.from_url(redis_url)
+        else:
+            self.redis = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, db=0)
         self.encoder = SentenceTransformer("all-MiniLM-L6-v2")
         self.threshold = 0.92
 
