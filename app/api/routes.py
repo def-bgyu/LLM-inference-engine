@@ -32,3 +32,13 @@ async def generate(request: GenerateRequest):
 @router.get("/metrics")
 async def metrics():
     return metrics_service.get_summary()
+
+@router.get("/recent-requests")
+async def recent_requests():
+    return metrics_service.get_recent_requests()
+
+@router.post("/clear-cache")
+async def clear_cache():
+    from app.services.cache_service import cache_service
+    cache_service.redis.flushall()
+    return {"status": "cache cleared"}

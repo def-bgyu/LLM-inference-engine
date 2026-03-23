@@ -13,9 +13,10 @@ class MetricsService:
     total_latency_ms: float = 0.0
     latency_history: List[float] = field(default_factory=list)
     batch_sizes: List[int] = field(default_factory=list)
+    recent_requests: List[dict] = field(default_factory=list)
     start_time: float = field(default_factory=time.time)
 
-    def record_request(self, latency_ms: float, cached: bool, batch_size: int = 1):
+    def record_request(self, latency_ms: float, cached: bool, batch_size: int = 1, prompt: str = ""):
         self.total_requests += 1
         self.total_latency_ms += latency_ms
         self.latency_history.append(latency_ms)
@@ -24,6 +25,14 @@ class MetricsService:
         else:
             self.cache_misses += 1
             self.batch_sizes.append(batch_size)
+        import uuid
+        self.recent_requests.append({
+            "request_id": str(uuid.uuid4())[:8],
+            "prompt": prompt[:50],
+            "cached": cached,
+            "latency_ms": round(latency_ms, 2),
+        })
+        self.recent_requests = self.recent_requests[-20:]
 
     def get_summary(self) -> dict:
         if not self.latency_history:
@@ -48,4 +57,8 @@ class MetricsService:
             "uptime_seconds": uptime_seconds,
         }
 
+    def get_recent_requests(self) -> list:
+        return list(reversed(self.recent_requests))
+
 metrics_service = MetricsService()
+

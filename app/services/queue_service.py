@@ -23,7 +23,8 @@ class QueueService:
             cached_result["latency_ms"] = round((time.perf_counter() - start) * 1000, 2)
             metrics_service.record_request(
                 latency_ms=cached_result["latency_ms"],
-                cached=True
+                cached=True,
+                prompt=prompt
             )
             return cached_result
         
@@ -40,7 +41,8 @@ class QueueService:
         metrics_service.record_request(
         latency_ms=result["latency_ms"],
         cached=False,
-        batch_size=1
+        batch_size=1,
+        prompt=prompt
         )
         return result
 
