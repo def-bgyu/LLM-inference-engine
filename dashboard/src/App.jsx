@@ -48,7 +48,7 @@ const css = `
   .fade-in { animation: fadeIn 0.25s ease forwards; }
 `;
 
-function MetricCard({ label, value, sub, accent, accentBg }) {
+function MetricCard({ label, value, sub, accent }) {
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "18px 20px", borderLeft: `4px solid ${accent || C.border}` }}>
       <div style={{ fontSize: 16, color: C.textMuted, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 10 }}>{label}</div>
@@ -74,7 +74,6 @@ export default function App() {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [stressProgress, setStressProgress] = useState(null);
   const [stressStats, setStressStats] = useState(null);
   const [stressComplete, setStressComplete] = useState(false);
   const [alpacaPrompts, setAlpacaPrompts] = useState([]);
@@ -85,8 +84,7 @@ export default function App() {
       .then(data => setAlpacaPrompts(data))
       .catch(() => console.log("Could not load Alpaca prompts"));
   }, []);
-  
-  
+
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -105,6 +103,8 @@ export default function App() {
             hits: m.cache_hits,
             misses: m.cache_misses,
           }].slice(-20));
+        } else {
+          setMetrics({ total_requests: 0, cache_hit_rate_pct: 0, avg_latency_ms: 0, p95_latency_ms: 0, cache_hits: 0, cache_misses: 0 });
         }
         setRecentRequests(r);
       } catch (e) {}
@@ -118,6 +118,8 @@ export default function App() {
     if (!prompt.trim() || loading) return;
     setLoading(true);
     setResponse(null);
+    setStressStats(null);
+    setStressComplete(false);
     try {
       const res = await fetch(`${API_URL}/generate`, {
         method: "POST",
@@ -132,9 +134,19 @@ export default function App() {
     setLoading(false);
   };
 
+  const clearCache = async () => {
+    await fetch(`${API_URL}/clear-cache`, { method: "POST" });
+    setResponse(null);
+    setPrompt("");
+    setStressStats(null);
+    setStressComplete(false);
+  };
+
   const runStressTest = async () => {
-    setStressProgress(0);
     setStressStats({ hits: 0, misses: 0 });
+    setStressComplete(false);
+    setResponse(null);
+    setPrompt("");
     let hits = 0, misses = 0;
     const pool = alpacaPrompts.length > 0 ? alpacaPrompts : STRESS_PROMPTS;
     const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 50);
@@ -148,7 +160,6 @@ export default function App() {
         if (data.cached) hits++; else misses++;
         setStressStats({ hits, misses });
       });
-      setStressProgress(i + 1);
       await new Promise(r => setTimeout(r, 80));
     }
     setStressComplete(true);
@@ -200,9 +211,9 @@ export default function App() {
           {/* Metric Cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 14, marginBottom: 24 }}>
             <MetricCard label="Total requests" value={metrics?.total_requests ?? "—"} accent={C.textMuted} />
-            <MetricCard label="Cache hit rate" value={metrics ? `${metrics.cache_hit_rate_pct}%` : "—"} sub="semantic similarity" accent={C.green} accentBg={C.greenBg} />
-            <MetricCard label="Avg latency" value={metrics ? `${Math.round(metrics.avg_latency_ms)}ms` : "—"} accent={C.blue} accentBg={C.blueBg} />
-            <MetricCard label="p95 latency" value={metrics ? `${Math.round(metrics.p95_latency_ms)}ms` : "—"} accent={C.red} accentBg={C.redBg} />
+            <MetricCard label="Cache hit rate" value={metrics ? `${metrics.cache_hit_rate_pct}%` : "—"} sub="semantic similarity" accent={C.green} />
+            <MetricCard label="Avg latency" value={metrics ? `${Math.round(metrics.avg_latency_ms)}ms` : "—"} accent={C.blue} />
+            <MetricCard label="p95 latency" value={metrics ? `${Math.round(metrics.p95_latency_ms)}ms` : "—"} accent={C.red} />
           </div>
 
           {/* Playground */}
@@ -220,9 +231,7 @@ export default function App() {
                   <button className="send-btn" onClick={sendPrompt} disabled={loading} style={{ fontSize: 13, padding: "9px 22px", borderRadius: 8, border: "none", background: C.blue, color: "#fff", fontFamily: "'Syne', system-ui", fontWeight: 600 }}>
                     {loading ? "Generating..." : "Send prompt"}
                   </button>
-                  <button className="send-btn" onClick={async () => {
-                      await fetch(`${API_URL}/clear-cache`, { method: "POST" });
-                    }} style={{ fontSize: 13, padding: "9px 22px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.surface, color: C.textMuted, fontFamily: "'Syne', system-ui", fontWeight: 600 }}>
+                  <button className="send-btn" onClick={clearCache} style={{ fontSize: 13, padding: "9px 22px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.surface, color: C.textMuted, fontFamily: "'Syne', system-ui", fontWeight: 600 }}>
                     Clear cache
                   </button>
                   <button className="send-btn" onClick={runStressTest} style={{ fontSize: 13, padding: "9px 22px", borderRadius: 8, border: `1px solid ${C.amber}`, background: C.amberBg, color: C.amber, fontFamily: "'Syne', system-ui", fontWeight: 600 }}>
@@ -243,7 +252,7 @@ export default function App() {
                 {response && (
                   <div className="fade-in" style={{ marginTop: 16, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "14px 16px" }}>
                     <div style={{ fontSize: 11, color: C.textMuted, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 10 }}>Response</div>
-                    <div style={{ fontSize: 13, color: C.text, lineHeight: 1.7, fontFamily: "'IBM Plex Mono', monospace" }}>
+                    <div style={{ fontSize: 13, color: C.text, lineHeight: 1.7, fontFamily: "'IBM Plex Mono', monospace", wordBreak: "break-word", overflowWrap: "break-word", maxHeight: 200, overflowY: "auto" }}>
                       {response.error || response.generated_text}
                     </div>
                     {!response.error && (
