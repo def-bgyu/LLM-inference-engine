@@ -147,10 +147,11 @@ export default function App() {
     setStressComplete(false);
     setResponse(null);
     setPrompt("");
-    let hits = 0, misses = 0;
+    let hits = 0, misses = 0, completed = 0;
     const pool = alpacaPrompts.length > 0 ? alpacaPrompts : STRESS_PROMPTS;
     const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 50);
-    for (let i = 0; i < 50; i++) {
+    const total = shuffled.length;
+    for (let i = 0; i < total; i++) {
       const p = shuffled[i];
       fetch(`${API_URL}/generate`, {
         method: "POST",
@@ -158,11 +159,12 @@ export default function App() {
         body: JSON.stringify({ prompt: p })
       }).then(r => r.json()).then(data => {
         if (data.cached) hits++; else misses++;
+        completed++;
         setStressStats({ hits, misses });
+        if (completed === total) setStressComplete(true);
       });
       await new Promise(r => setTimeout(r, 80));
     }
-    setStressComplete(true);
   };
 
   const tooltipStyle = { background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 11, color: C.text };
