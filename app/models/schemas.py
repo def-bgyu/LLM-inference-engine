@@ -11,3 +11,6 @@ class GenerateResponse(BaseModel):
     generated_text: str
     latency_ms: float
     cached: bool = False
+    input_tokens: int = 0
+    output_tokens: int = 0
+    tokens_per_second: float = 0.0

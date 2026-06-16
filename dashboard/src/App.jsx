@@ -256,13 +256,27 @@ export default function App() {
                       {response.error || response.generated_text}
                     </div>
                     {!response.error && (
-                      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-                        <Badge cached={response.cached} />
-                        <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "'IBM Plex Mono', monospace" }}>{Math.round(response.latency_ms)}ms</span>
-                        <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "'IBM Plex Mono', monospace" }}>id: {response.request_id}</span>
+                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+                        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 8 }}>
+                          <Badge cached={response.cached} />
+                          <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "'IBM Plex Mono', monospace" }}>{Math.round(response.latency_ms)}ms</span>
+                          <span style={{ fontSize: 11, color: C.textMuted, fontFamily: "'IBM Plex Mono', monospace" }}>id: {response.request_id}</span>
+                        </div>
+                      <div style={{ display: "flex", gap: 16 }}>
+                        <span style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: C.textSub }}>
+                          <span style={{ color: C.blue, fontWeight: 500 }}>{response.input_tokens}</span> input tokens
+                        </span>
+                        <span style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: C.textSub }}>
+                          <span style={{ color: C.green, fontWeight: 500 }}>{response.output_tokens}</span> output tokens
+                        </span>
+                        <span style={{ fontSize: 11, fontFamily: "'IBM Plex Mono', monospace", color: C.textSub }}>
+                          <span style={{ color: C.amber, fontWeight: 500 }}>{response.tokens_per_second}</span> tok/s
+                        </span>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
+                </div>
                 )}
               </div>
 
