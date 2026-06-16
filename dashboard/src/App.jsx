@@ -85,30 +85,31 @@ export default function App() {
       .catch(() => console.log("Could not load Alpaca prompts"));
   }, []);
 
+  const fetchAll = async () => {
+    try {
+      const [mRes, rRes] = await Promise.all([
+        fetch(`${API_URL}/metrics`),
+        fetch(`${API_URL}/recent-requests`)
+      ]);
+      const m = await mRes.json();
+      const r = await rRes.json();
+      if (m.total_requests !== undefined) {
+        setMetrics(m);
+        setHistory(prev => [...prev, {
+          time: new Date().toLocaleTimeString(),
+          avg: Math.round(m.avg_latency_ms),
+          p95: Math.round(m.p95_latency_ms),
+          hits: m.cache_hits,
+          misses: m.cache_misses,
+        }].slice(-20));
+      } else {
+        setMetrics({ total_requests: 0, cache_hit_rate_pct: 0, avg_latency_ms: 0, p95_latency_ms: 0, cache_hits: 0, cache_misses: 0 });
+      }
+      setRecentRequests(r);
+    } catch (e) {}
+  };
+
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [mRes, rRes] = await Promise.all([
-          fetch(`${API_URL}/metrics`),
-          fetch(`${API_URL}/recent-requests`)
-        ]);
-        const m = await mRes.json();
-        const r = await rRes.json();
-        if (m.total_requests !== undefined) {
-          setMetrics(m);
-          setHistory(prev => [...prev, {
-            time: new Date().toLocaleTimeString(),
-            avg: Math.round(m.avg_latency_ms),
-            p95: Math.round(m.p95_latency_ms),
-            hits: m.cache_hits,
-            misses: m.cache_misses,
-          }].slice(-20));
-        } else {
-          setMetrics({ total_requests: 0, cache_hit_rate_pct: 0, avg_latency_ms: 0, p95_latency_ms: 0, cache_hits: 0, cache_misses: 0 });
-        }
-        setRecentRequests(r);
-      } catch (e) {}
-    };
     fetchAll();
     const interval = setInterval(fetchAll, 3000);
     return () => clearInterval(interval);
@@ -161,7 +162,7 @@ export default function App() {
         if (data.cached) hits++; else misses++;
         completed++;
         setStressStats({ hits, misses });
-        if (completed === total) setStressComplete(true);
+        if (completed === total) { setStressComplete(true); fetchAll(); }
       });
       await new Promise(r => setTimeout(r, 80));
     }
