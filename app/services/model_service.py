@@ -22,6 +22,8 @@ class ModelService:
         self.model = AutoModelForCausalLM.from_pretrained(settings.model_name)
         self.model = self.model.to(self.device)
         self.model.eval()
+        if self.device == "cpu":
+            self.model = torch.compile(self.model, backend="inductor")
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = 'left'

@@ -185,7 +185,7 @@ export default function App() {
               </div>
               <div style={{ height: 36, width: 1, background: C.border }} />
               <span style={{ fontSize: 11, padding: "4px 12px", borderRadius: 20, background: C.blueBg, color: C.blue, border: `1px solid #bfdbfe`, fontFamily: "'IBM Plex Mono', monospace" }}>
-                GPT-2 · CPU
+                DistilGPT-2 · CPU
               </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

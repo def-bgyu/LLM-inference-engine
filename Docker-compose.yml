@@ -15,8 +15,8 @@ services:
     depends_on:
       - redis
     environment:
-      - MODEL_NAME=EleutherAI/gpt-neo-1.3B
+      - MODEL_NAME=distilgpt2
       - MAX_BATCH_SIZE=8
       - BATCH_WAIT_MS=50
-      - MAX_NEW_TOKENS=100
+      - MAX_NEW_TOKENS=50
       - REDIS_HOST=redis
